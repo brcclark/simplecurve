@@ -102,13 +102,22 @@ export default makeScene2D(function* (view) {
           size={20}
           position={()=> c1().getPointAtPercentage(prog2()).position}
       />
+      <Line
+        stroke={'orange'}
+        lineWidth={5}
+        points={[[0,25],[0,-25]]}
+        position={c1().getPointAtPercentage(0.33).position}/>
+        
+        <Circle
+        size={10}
+        fill={'cyan'}
+        position={()=>c1().getPointAtPercentage(prog2()).position}/>
       </>
   );
 
   curCurve(curves[0])
   curIdx(0)
   yield* any(prog(1,3 * (1 * curCurve().arcLength() / totalLength()),linear),prog2(1,3,linear))
-  l.debug()
   curCurve(curves[1])
   curIdx(curIdx() + 1)
   prog(0)
