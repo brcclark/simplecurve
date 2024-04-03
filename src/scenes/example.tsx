@@ -1,8 +1,8 @@
-import {Circle, makeScene2D,CubicBezier,Curve,Line,Rect} from '@motion-canvas/2d';
+import {Circle, makeScene2D,CubicBezier,Curve,Line,Rect,Spline,Knot} from '@motion-canvas/2d';
 import {createRef,createComputed,makeRef,Vector2,createSignal,linear,Logger, useLogger,any} from '@motion-canvas/core';
 
 export default makeScene2D(function* (view) {
-  const c1 = createRef<CubicBezier>();
+  const c1 = createRef<Curve>();
   const curves: Curve[] = []
   const curCurve = createSignal<Curve>();
   const r1 = createRef<Rect>();
@@ -20,17 +20,10 @@ export default makeScene2D(function* (view) {
     for (let idx  = 0; idx < curIdx(); idx++) { 
       v += curves[idx].arcLength()
     }
-    //l.debug(curIdx()+": " + v.toString() + " along of " + totalLength().toString())
     //Add the current curve's progress
     v = (v + prog() * curCurve().arcLength()) / totalLength()
-    //l.debug(v.toString() + " : " + prog().toString())
     return v
   })
-  
-  //want to define an animation time for the entire curve set
-  //Should be split among the curve array members. or otherwise I can just manually set it. ideally we could calculate it but, also, eh, it's easy to determine I think
-
-
   const totalLength = createComputed(()=>{
     let t = 0;
     curves.forEach(curve => {
@@ -44,20 +37,28 @@ export default makeScene2D(function* (view) {
           c1().getPointAtPercentage(totalProg()).position.y,
       )
   })
-
   view.add(
       <>
-          <CubicBezier
+      <Line 
         ref={makeRef(curves,0)}
+        stroke={'yellow'}
+        lineWidth={10}
+        points={[
+          [-400,200],
+          [-400,100]
+        ]}
+      />
+          <CubicBezier
+        ref={makeRef(curves,1)}
         stroke={'red'}
         lineWidth={10}
-        p0={[-400,-50]}
+        p0={[-400,100]}
         p1={[-400,-100]}
         p2={[-325,-150]}
         p3={[-275,-150]}
       />
       <Line 
-        ref={makeRef(curves,1)}
+        ref={makeRef(curves,2)}
         stroke={'green'}
         lineWidth={10}
         points={[
@@ -66,7 +67,7 @@ export default makeScene2D(function* (view) {
         ]}
       />
       <CubicBezier
-        ref={makeRef(curves,2)}
+        ref={makeRef(curves,3)}
         stroke={'darkred'}
         lineWidth={10}
         p0={[275,-150]}
@@ -79,7 +80,7 @@ export default makeScene2D(function* (view) {
         stroke={'darkblue'}
         lineWidth={10}
         p0={[-400,-250]}
-        p1={[-300,-560]}
+        p1={[-450,-560]}
         p2={[100,-200]}
         p3={[400,-250]}
       />
@@ -95,6 +96,7 @@ export default makeScene2D(function* (view) {
           size={30}
           position={()=> r2Pos()}
       />
+      
       <Rect
           ref={r3}
           fill={'lightgreen'}
@@ -106,24 +108,28 @@ export default makeScene2D(function* (view) {
         stroke={'orange'}
         lineWidth={5}
         points={[[0,25],[0,-25]]}
-        position={c1().getPointAtPercentage(0.33).position}/>
-        
-        <Circle
+        position={c1().getPointAtPercentage(curves[0].arcLength() / totalLength()).position}/>
+      <Circle
         size={10}
         fill={'cyan'}
         position={()=>c1().getPointAtPercentage(prog2()).position}/>
       </>
   );
 
+  
   curCurve(curves[0])
   curIdx(0)
-  yield* any(prog(1,3 * (1 * curCurve().arcLength() / totalLength()),linear),prog2(1,3,linear))
+  yield* any(prog(1,4 * (1 * curCurve().arcLength() / totalLength()),linear),prog2(1,4,linear))
   curCurve(curves[1])
   curIdx(curIdx() + 1)
   prog(0)
-  yield* prog(1,3 * (1 * curCurve().arcLength() / totalLength()),linear)
+  yield* prog(1,4 * (1 * curCurve().arcLength() / totalLength()),linear)
   prog(0)
   curCurve(curves[2])
   curIdx(curIdx() + 1)
-  yield* prog(1,3 * (1 * curCurve().arcLength() / totalLength()),linear)
+  yield* prog(1,4 * (1 * curCurve().arcLength() / totalLength()),linear)
+  prog(0)
+  curCurve(curves[3])
+  curIdx(curIdx() + 1)
+  yield* prog(1,4 * (1 * curCurve().arcLength() / totalLength()),linear)
 })
